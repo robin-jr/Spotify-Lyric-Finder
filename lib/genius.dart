@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:spotify_lyric_finder/screens/webpage.dart';
 import 'package:uni_links2/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:html/parser.dart' show parse;
+import 'package:http/http.dart' as http;
 
 final String GENIUS_CLIENT_ID =
     "oBLcEA_3qg0sRcx6EEz1HIfUeDBGqdl9YazXNSbZuh3vAeMxpHSGsH1QGLi0KWw5";
@@ -21,7 +20,7 @@ final tokenEndpoint = Uri.parse('https://api.genius.com/oauth/token');
 final identifier = GENIUS_CLIENT_ID;
 final secret = GENIUS_CLIENT_SECRET;
 final redirectUrl = Uri.parse(GENIUS_REDIRECT_URL);
-late File credentialsFile; //TODO
+late File credentialsFile;
 var responseUrl;
 
 Future<oauth2.Client> createClient(BuildContext context) async {
@@ -38,11 +37,7 @@ Future<oauth2.Client> createClient(BuildContext context) async {
 
   await launch(authorizationUrl.toString());
   await initUniLinks(grant, context);
-  void funFunction(args) {
-    print("hello");
-  }
 
-  print("responseUrl is --> $responseUrl");
   return await grant.handleAuthorizationResponse(responseUrl.queryParameters);
 }
 
@@ -62,30 +57,30 @@ Future<void> initUniLinks(
     var client =
         await grant.handleAuthorizationResponse(responseUrl.queryParameters);
     await credentialsFile.writeAsString(client.credentials.toJson());
-    String query = "Hello Adelle";
-    String res =
-        await client.read(Uri.parse('http://api.genius.com/search?q=$query'));
-    // print("Result is --> $res");
-    print("below is the result");
-    log(res);
     _sub.cancel();
   });
-  print("outside uni");
-  print("sub:  ${_sub}");
-
-  // NOTE: Don't forget to call _sub.cancel() in dispose()
 }
 
 Future<String> getLyrics(String query, BuildContext context) async {
   var dir = await getApplicationDocumentsDirectory();
   var path = dir.path;
+
   credentialsFile = File('$path/credentials.json');
   var client = await createClient(context);
   String res =
       await client.read(Uri.parse('http://api.genius.com/search?q=$query'));
 
-  print("The really long lyrics");
-  log(res);
+  var parsedRes = jsonDecode(res);
+  String lyricsUrl = parsedRes['response']['hits'][0]['result']['url'];
+
+  final response = await http.get(Uri.parse(lyricsUrl));
+  var document = parse(response.body);
+  var lyricsElement = document.getElementsByClassName("lyrics");
+  String lyrics = '';
+  lyricsElement.forEach((element) {
+    lyrics += element.text;
+  });
+
   await credentialsFile.writeAsString(client.credentials.toJson());
-  return res;
+  return lyrics;
 }

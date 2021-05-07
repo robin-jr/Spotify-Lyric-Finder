@@ -1,11 +1,7 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:spotify_lyric_finder/genius.dart';
 import 'package:spotify_lyric_finder/screens/signIn_page.dart';
@@ -41,7 +37,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Spotify Lyric Finder Title',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
@@ -85,13 +81,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    // connectToSpotify();
+    connectToSpotify();
   }
 
   void connectToSpotify() async {
     try {
       bool isConnected = await SpotifySdk.connectToSpotifyRemote(
-          clientId: SPOTIFY_CLIENT_ID, redirectUrl: SPOTIFY_REDIRECT_URL);
+          clientId: SPOTIFY_CLIENT_ID,
+          redirectUrl: SPOTIFY_REDIRECT_URL,
+          scope: 'user-read-currently-playing');
       if (isConnected) {
         Fluttertoast.showToast(msg: "Connected to Spotify");
         print("Connected to spotify");
@@ -105,19 +103,25 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _getCurrentSong() async {
-    // var state = await SpotifySdk.getPlayerState();
-    // var song = state!.track!.name;
-    // var artist = state.track!.artist.name;
+    var state = await SpotifySdk.getPlayerState();
+    var song = state!.track!.name;
+    var artist = state.track!.artist.name;
+    String query = song + " " + artist;
+    setState(() {
+      currentSong = song + " by " + artist;
+    });
     try {
-      var lyrics = await getLyrics('Hello Adelle', context);
+      print("query--> $query");
+      var lyrics = await getLyrics(query, context);
+      print("from home--> $lyrics");
       print(lyrics);
+      setState(() {
+        currentSong = lyrics;
+      });
     } catch (e) {
       print("Error happened fetching lyrics --> $e");
     }
-    // print("Spotify Song is: $song");
-    // setState(() {
-    //   currentSong = song;
-    // });
+    print("Spotify Song is: $song");
   }
 
   @override
@@ -131,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'You have pushed the button this many times:\n$currentSong',
+              '$currentSong',
             ),
             Text(
               '$_counter',
@@ -147,17 +151,17 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        // onPressed: () => {_getCurrentSong()},
         onPressed: () async {
           try {
-            // print("{'a':1}".substring(1, 7).runtimeType);
+            _getCurrentSong();
+            print("pressed");
           } catch (e) {
             print("Exception --> $e");
           }
         },
         tooltip: 'Search Lyrics',
         child: Icon(Icons.search),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
