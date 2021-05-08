@@ -27,14 +27,10 @@ dependencies:
   firebase_auth: ^1.1.1
   firebase_core: ^1.0.4
   fluttertoast: ^8.0.6
+  html: ^0.15.0
   http: ^0.13.1
-  oauth2: ^2.0.0
-  path_provider: ^2.0.1
   provider: ^5.0.0
   spotify_sdk: ^2.1.0
-  uni_links2: ^0.6.0+2
-  url_launcher: ^6.0.3
-  webview_flutter: ^2.0.4
 
 dev_dependencies:
   flutter_test:

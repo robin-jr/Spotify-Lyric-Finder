@@ -1,12 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:spotify_lyric_finder/genius.dart';
+import 'package:spotify_lyric_finder/utils/genius.dart';
 import 'package:spotify_lyric_finder/screens/signIn_page.dart';
 import 'package:spotify_lyric_finder/screens/signUp_page.dart';
-import 'package:spotify_lyric_finder/screens/webpage.dart';
+import 'package:spotify_lyric_finder/utils/spotify.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 
 import 'authentication_service.dart';
@@ -17,12 +16,7 @@ void main() async {
   runApp(MyApp());
 }
 
-final String SPOTIFY_CLIENT_ID = "02b37193307e4b93877c93e0ab495f14";
-final String SPOTIFY_CLIENT_SECRET = "84648a0b18f54dbe83d7bca3e2d4299e";
-final String SPOTIFY_REDIRECT_URL = "https://www.google.com/";
-
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -46,7 +40,6 @@ class MyApp extends StatelessWidget {
         routes: {
           LoginScreen.routeName: (context) => LoginScreen(),
           SignUpScreen.routeName: (context) => SignUpScreen(),
-          WebScreen.routeName: (context) => WebScreen(),
         },
       ),
     );
@@ -82,24 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     connectToSpotify();
-  }
-
-  void connectToSpotify() async {
-    try {
-      bool isConnected = await SpotifySdk.connectToSpotifyRemote(
-          clientId: SPOTIFY_CLIENT_ID,
-          redirectUrl: SPOTIFY_REDIRECT_URL,
-          scope: 'user-read-currently-playing');
-      if (isConnected) {
-        Fluttertoast.showToast(msg: "Connected to Spotify");
-        print("Connected to spotify");
-      } else {
-        Fluttertoast.showToast(msg: "Couldn't connect to spotify");
-        print("Couldn't connect to spotify");
-      }
-    } catch (e) {
-      print("Error connecting to Spotify $e");
-    }
   }
 
   void _getCurrentSong() async {
