@@ -68,8 +68,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  String currentSong = "";
+  String _currentSong = "Click search";
+  String _lyrics = "";
 
   @override
   void initState() {
@@ -83,15 +83,16 @@ class _MyHomePageState extends State<MyHomePage> {
     var artist = state.track!.artist.name;
     String query = song + " " + artist;
     setState(() {
-      currentSong = song + " by " + artist;
+      _currentSong = song + " by " + artist;
+      _lyrics = "Loading...";
     });
     try {
       print("query--> $query");
       var lyrics = await getLyrics(query, context);
-      print("from home--> $lyrics");
+      // print("from home--> $lyrics");
       print(lyrics);
       setState(() {
-        currentSong = lyrics;
+        _lyrics = lyrics;
       });
     } catch (e) {
       print("Error happened fetching lyrics --> $e");
@@ -110,11 +111,16 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              '$currentSong',
+              '$_currentSong',
+              style: Theme.of(context).textTheme.headline6,
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  '$_lyrics',
+                  style: Theme.of(context).textTheme.bodyText2,
+                ),
+              ),
             ),
             ElevatedButton(
                 onPressed: () async => await Provider.of<AuthenticationService>(
