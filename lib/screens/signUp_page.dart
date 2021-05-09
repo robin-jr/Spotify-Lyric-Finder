@@ -3,13 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:spotify_lyric_finder/screens/signIn_page.dart';
 
 import '../authentication_service.dart';
 
 class SignUpScreen extends StatelessWidget {
   static String routeName = '/SignupScreen';
   late AuthenticationService _authenticationService;
+
   Future<void> _registerUser(String email, String password) async {
     print('Email: $email, Password: $password');
     UserCredential? userCredential =
@@ -27,51 +27,105 @@ class SignUpScreen extends StatelessWidget {
         Provider.of<AuthenticationService>(context, listen: false);
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
+    TextEditingController nameController = TextEditingController();
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text("Signup"),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: TextFormField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Email',
-                ),
+            Spacer(),
+            Text(
+              "Create Account!",
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w500),
+            ),
+            Spacer(),
+            Container(
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  TextFormField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  TextFormField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  TextFormField(
+                    //controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                    ),
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: TextFormField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Password',
-                ),
+            Spacer(),
+            Container(
+              child: Column(
+                children: [
+                  InkWell(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusDirectional.circular(10),
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    onTap: () {
+                      _registerUser(
+                          emailController.text, passwordController.text).then((value) => Navigator.pop(context));
+                      emailController.text = passwordController.text = '';
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Have an Account?",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      TextButton(
+                        child: Text(
+                          "Sign In",
+                          style: TextStyle(
+                            fontSize: 18,
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              child: ElevatedButton(
-                  onPressed: () {
-                    _registerUser(
-                        emailController.text, passwordController.text);
-                    emailController.text = passwordController.text = '';
-                  },
-                  child: Text("Submit")),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, LoginScreen.routeName);
-                  },
-                  child: Text("Login")),
-            ),
+            Spacer(flex: 2),
           ],
         ),
       ),
