@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
-import 'package:flutter/cupertino.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:http/http.dart' as http;
+import 'package:spotify_lyric_finder/models/lyric.dart';
 
-Future<String> getLyrics(String query, BuildContext context) async {
+Future<String> getLyricUrl(String query) async {
   Uri q = Uri.parse('http://api.genius.com/search?q=$query');
   var res = await http.get(q, headers: {
     'Authorization':
@@ -14,29 +13,37 @@ Future<String> getLyrics(String query, BuildContext context) async {
 
   var parsedRes = jsonDecode(res.body);
   String lyricsUrl = parsedRes['response']['hits'][0]['result']['url'];
-
-  final response = await http.get(Uri.parse(lyricsUrl));
-  var document = parse(response.body);
-  var lyricsElement = document.getElementsByClassName("lyrics");
-  var songElement = document.getElementsByClassName("song_body-lyrics");
-  String lyrics = '';
-  lyricsElement.forEach((element) {
-    lyrics += element.text;
-  });
-  String song = "";
-  songElement.forEach((element) {
-    song += element.text;
-  });
   print("url --> $lyricsUrl");
-  print("song --> $song");
-  print("res--> $response");
-  // log(response.body);
-  print("doc--> $document");
-  if (response.body.contains('class="lyrics"')) {
-    print("contains the lyrics");
-    print("body --> ${response.body}");
+  return lyricsUrl;
+}
+
+Future<String> extractLyrics(String url) async {
+  int i = 0;
+  var lyricsElement = [];
+  String lyrics = '';
+  while (i < 5) {
+    i++;
+    var response = await http.get(Uri.parse(url));
+    lyricsElement = parse(response.body).getElementsByClassName("lyrics");
+    if (lyricsElement.isNotEmpty) {
+      print("Got lyrics");
+      break;
+    }
+    print("contains sh** $i");
   }
-  print("ele--> $lyricsElement");
-  print("not --> $lyrics");
+  if (lyricsElement.isNotEmpty) {
+    lyricsElement.forEach((element) {
+      lyrics += element.text;
+    });
+  } else {
+    lyrics = "Could not get Lyrics (Check your internet Connection)";
+  }
   return lyrics;
+}
+
+Future<Lyrics> getLyrics(String query) async {
+  String lyricsUrl = await getLyricUrl(query);
+  String lyrics = await extractLyrics(lyricsUrl);
+
+  return Lyrics(lyricsUrl, lyrics);
 }

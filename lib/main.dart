@@ -47,7 +47,6 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        // home: MyHomePage(title: 'Flutter Demo Home Page'),
         home: AuthenticationWrapper(),
         routes: {
           LoginScreen.routeName: (context) => LoginScreen(),

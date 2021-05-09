@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:spotify_lyric_finder/models/lyric.dart';
 import 'package:spotify_lyric_finder/utils/genius.dart';
 import 'package:spotify_lyric_finder/utils/spotify.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
@@ -14,6 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String _currentSong = "Not yet Searched!";
   String _lyrics = "";
+  String _lyricsUrl = "";
 
   @override
   void initState() {
@@ -29,17 +32,19 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentSong = song + " by " + artist;
       _lyrics = "Loading...";
+      _lyricsUrl = "";
     });
     try {
       print("query--> $query");
-      var lyrics = await getLyrics(query, context);
-      // print("from home--> $lyrics");
-      print(lyrics);
+      Lyrics lyrics = await getLyrics(query);
+      print("from home--> ${lyrics.lyrics}");
       setState(() {
-        _lyrics = lyrics;
+        _lyrics = lyrics.lyrics;
+        _lyricsUrl = lyrics.url;
       });
     } catch (e) {
       print("Error happened fetching lyrics --> $e");
+      Fluttertoast.showToast(msg: "Something unexpected happened");
     }
     print("Spotify Song is: $song");
   }
@@ -63,65 +68,82 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.logout),
             iconSize: 22,
-            onPressed: () async => await Provider.of<AuthenticationService>(
-                context,
-                listen: false)
-                .signOut(),
+            onPressed: () async =>
+                await Provider.of<AuthenticationService>(context, listen: false)
+                    .signOut(),
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         child: Stack(
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children:[
-                Spacer(),
-                Text(
-                  "$_currentSong",
-                  style: Theme.of(context).textTheme.headline6,
+              children: [
+                Padding(
+                  padding:
+                      EdgeInsets.only(bottom: 10, top: 10, left: 5, right: 5),
+                  child: Text(
+                    "$_currentSong",
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
                 ),
-                Spacer(),
+                Padding(
+                  padding:
+                      EdgeInsets.only(bottom: 10, top: 1, left: 5, right: 1),
+                  child: Text(
+                    "$_lyricsUrl",
+                    style: Theme.of(context).textTheme.bodyText2,
+                    textAlign: TextAlign.right,
+                  ),
+                ),
                 Expanded(
-                  flex:8,
+                  flex: 8,
                   child: SingleChildScrollView(
                     child: Text(
                       '$_lyrics',
-                      style: Theme.of(context).textTheme.bodyText2,
+                      style: Theme.of(context).textTheme.bodyText1,
                     ),
                   ),
                 ),
               ],
             ),
             Align(
-              alignment:Alignment.bottomRight,
-                 child: InkWell(
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 5,right: 2),
-                      padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.search,color: Colors.white,),
-                          SizedBox(width: 5),
-                          Text("Search",style: TextStyle(color: Colors.white,fontSize: 16),),
-                        ],
-                      ),
-                    ),
-                    onTap: () async {
-                      try {
-                        _getCurrentSong();
-                        print("pressed");
-                      } catch (e) {
-                        print("Exception --> $e");
-                      }
-                    },
+              alignment: Alignment.bottomRight,
+              child: InkWell(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 5, right: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.circular(25),
                   ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.search,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        "Search",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                onTap: () async {
+                  try {
+                    _getCurrentSong();
+                    print("pressed");
+                  } catch (e) {
+                    print("Exception --> $e");
+                  }
+                },
+              ),
             ),
           ],
         ),
