@@ -44,6 +44,10 @@ class _HomePageState extends State<HomePage> {
       });
     } catch (e) {
       print("Error happened fetching lyrics --> $e");
+      setState(() {
+        _lyrics = "Something unexpected happened";
+        _lyricsUrl = '';
+      });
       Fluttertoast.showToast(msg: "Something unexpected happened");
     }
     print("Spotify Song is: $song");
