@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
     });
     try {
       print("query--> $query");
-      Lyrics lyrics = await getLyrics(query);
+      Lyrics lyrics = await getLyrics(query, artist);
       print("from home--> ${lyrics.lyrics}");
       setState(() {
         _lyrics = lyrics.lyrics;

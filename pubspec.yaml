@@ -29,8 +29,10 @@ dependencies:
   fluttertoast: ^8.0.6
   html: ^0.15.0
   http: ^0.13.1
+  path: ^1.8.0
   provider: ^5.0.0
   spotify_sdk: ^2.1.0
+  sqflite: ^2.0.0+3
 
 dev_dependencies:
   flutter_test:

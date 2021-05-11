@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:html/parser.dart' show parse;
 import 'package:http/http.dart' as http;
 import 'package:spotify_lyric_finder/models/lyric.dart';
+import 'package:spotify_lyric_finder/utils/database.dart';
 
-Future<String> getLyricUrl(String query) async {
+Future<String?> getLyricUrl(String query, String artistName) async {
   Uri q = Uri.parse('http://api.genius.com/search?q=$query');
   var res = await http.get(q, headers: {
     'Authorization':
@@ -12,12 +13,19 @@ Future<String> getLyricUrl(String query) async {
   });
 
   var parsedRes = jsonDecode(res.body);
-  String lyricsUrl = parsedRes['response']['hits'][0]['result']['url'];
+  String? lyricsUrl;
+  for (var hit in parsedRes['response']['hits']) {
+    if (hit['result']['primary_artist']['name']
+        .toLowerCase()
+        .contains(artistName.toLowerCase())) {
+      lyricsUrl = hit['result']['url'];
+    }
+  }
   print("url --> $lyricsUrl");
   return lyricsUrl;
 }
 
-Future<String> extractLyrics(String url) async {
+Future<String?> extractLyrics(String url) async {
   int i = 0;
   var lyricsElement = [];
   String lyrics = '';
@@ -36,14 +44,28 @@ Future<String> extractLyrics(String url) async {
       lyrics += element.text;
     });
   } else {
-    lyrics = "Could not get Lyrics (Check your internet Connection)";
+    return null;
   }
   return lyrics;
 }
 
-Future<Lyrics> getLyrics(String query) async {
-  String lyricsUrl = await getLyricUrl(query);
-  String lyrics = await extractLyrics(lyricsUrl);
+Future<Lyrics> getLyrics(String query, String artist) async {
+  Lyrics? cacheLyrics = await getLyricsFromDatabase(query);
+  if (cacheLyrics != null) {
+    return cacheLyrics;
+  }
+  String? lyrics;
+  String? lyricsUrl = await getLyricUrl(query, artist);
 
-  return Lyrics(lyricsUrl, lyrics);
+  if (lyricsUrl == null) {
+    lyrics = "Lyrics not found";
+    return Lyrics(query, '', lyrics);
+  }
+  lyrics = await extractLyrics(lyricsUrl);
+  if (lyrics == null) {
+    lyrics = "Could not get Lyrics (Check your internet Connection)";
+  } else {
+    await insertLyrics(Lyrics(query, lyricsUrl, lyrics));
+  }
+  return Lyrics(query, lyricsUrl, lyrics);
 }
