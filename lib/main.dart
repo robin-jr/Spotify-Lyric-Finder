@@ -44,8 +44,9 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Spotify Lyric Finder',
         theme: ThemeData(
-          primarySwatch: Colors.indigo,
-          primaryColor: Color(0xff3B485B),
+          primarySwatch: Colors.deepPurple,
+          backgroundColor: Colors.black,
+          primaryColor: Colors.deepPurple,
           inputDecorationTheme: InputDecorationTheme(
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(

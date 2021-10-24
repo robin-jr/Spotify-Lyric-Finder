@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:spotify_lyric_finder/models/lyric.dart';
 import 'package:spotify_lyric_finder/utils/database.dart';
 
-Future<String?> getLyricUrl(String query, String artistName) async {
+Future<String?> getLyricUrl(
+    String query, String artistName, String song) async {
   Uri q = Uri.parse('http://api.genius.com/search?q=$query');
   var res = await http.get(q, headers: {
     'Authorization':
@@ -15,10 +16,13 @@ Future<String?> getLyricUrl(String query, String artistName) async {
   var parsedRes = jsonDecode(res.body);
   String? lyricsUrl;
   for (var hit in parsedRes['response']['hits']) {
+    print("check --> ${hit['result']['title']}, $query");
     if (hit['result']['primary_artist']['name']
-        .toLowerCase()
-        .contains(artistName.toLowerCase())) {
+            .toLowerCase()
+            .contains(artistName.toLowerCase()) &&
+        hit['result']['title'].toLowerCase().contains(song.toLowerCase())) {
       lyricsUrl = hit['result']['url'];
+      break;
     }
   }
   print("url --> $lyricsUrl");
@@ -49,13 +53,14 @@ Future<String?> extractLyrics(String url) async {
   return lyrics;
 }
 
-Future<Lyrics> getLyrics(String query, String artist) async {
+Future<Lyrics> getLyrics(String artist, String song) async {
+  String query = song + " " + artist;
   Lyrics? cacheLyrics = await getLyricsFromDatabase(query);
   if (cacheLyrics != null) {
     return cacheLyrics;
   }
   String? lyrics;
-  String? lyricsUrl = await getLyricUrl(query, artist);
+  String? lyricsUrl = await getLyricUrl(query, artist, song);
 
   if (lyricsUrl == null) {
     lyrics = "Lyrics not found";

@@ -28,15 +28,14 @@ class _HomePageState extends State<HomePage> {
     var state = await SpotifySdk.getPlayerState();
     var song = state!.track!.name;
     var artist = state.track!.artist.name;
-    String query = song + " " + artist;
     setState(() {
       _currentSong = song + " by " + artist;
       _lyrics = "Loading...";
       _lyricsUrl = "";
     });
     try {
-      print("query--> $query");
-      Lyrics lyrics = await getLyrics(query, artist);
+      print("query--> $artist $song");
+      Lyrics lyrics = await getLyrics(artist, song);
       print("from home--> ${lyrics.lyrics}");
       setState(() {
         _lyrics = lyrics.lyrics;
@@ -51,6 +50,31 @@ class _HomePageState extends State<HomePage> {
       Fluttertoast.showToast(msg: "Something unexpected happened");
     }
     print("Spotify Song is: $song");
+  }
+
+  Widget getLine(String line) {
+    line = line.trim();
+    if (line.isEmpty) {
+      return Container(
+        height: 60,
+      );
+    }
+    return Container(
+      height: 60,
+      // color: const Color(0xffeeee00),
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(horizontal: 8),
+      child: Text(
+        '$line',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: line.characters.first == '['
+                ? FontWeight.bold
+                : FontWeight.normal),
+      ),
+    );
   }
 
   @override
@@ -78,78 +102,92 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        child: Stack(
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding:
-                      EdgeInsets.only(bottom: 10, top: 10, left: 5, right: 5),
-                  child: Text(
-                    "$_currentSong",
-                    style: Theme.of(context).textTheme.headline6,
-                  ),
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.only(bottom: 10, top: 1, left: 5, right: 1),
-                  child: Text(
-                    "$_lyricsUrl",
-                    style: Theme.of(context).textTheme.bodyText2,
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-                Expanded(
-                  flex: 8,
-                  child: SingleChildScrollView(
-                    child: Text(
-                      '$_lyrics',
-                      style: Theme.of(context).textTheme.bodyText1,
+      body: Container(
+        color: Colors.black,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+          child: Stack(
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    child: Expanded(
+                      flex: 1,
+                      child: SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: MediaQuery.of(context).size.height,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: 10, top: 10, left: 5, right: 5),
+                                child: Text(
+                                  "$_currentSong",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 26),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 100),
+                                child: Divider(color: Colors.white, height: 20),
+                              ),
+                              ..._lyrics
+                                  .trim()
+                                  .split('\n')
+                                  .map((line) => getLine(line))
+                                  .toList()
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: InkWell(
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 5, right: 2),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.search,
-                        color: Colors.white,
-                      ),
-                      SizedBox(width: 5),
-                      Text(
-                        "Search",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-                onTap: () async {
-                  try {
-                    _getCurrentSong();
-                    print("pressed");
-                  } catch (e) {
-                    print("Exception --> $e");
-                  }
-                },
+                ],
               ),
-            ),
-          ],
+              Align(
+                alignment: Alignment.bottomRight,
+                child: InkWell(
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 5, right: 2),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.search,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          "Search",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                  onTap: () async {
+                    try {
+                      _getCurrentSong();
+                      print("pressed");
+                    } catch (e) {
+                      print("Exception --> $e");
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
