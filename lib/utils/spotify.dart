@@ -10,7 +10,8 @@ void connectToSpotify() async {
     bool isConnected = await SpotifySdk.connectToSpotifyRemote(
         clientId: SPOTIFY_CLIENT_ID,
         redirectUrl: SPOTIFY_REDIRECT_URL,
-        scope: 'user-read-currently-playing,playlist-read-private');
+        scope:
+            'user-read-currently-playing,playlist-read-private,user-modify-playback-state');
     if (isConnected) {
       Fluttertoast.showToast(msg: "Connected to Spotify");
       print("Connected to spotify");
@@ -20,5 +21,13 @@ void connectToSpotify() async {
     }
   } catch (e) {
     print("Error connecting to Spotify $e");
+  }
+}
+
+void togglePlayback(bool isPlaying) {
+  if (isPlaying) {
+    SpotifySdk.pause();
+  } else {
+    SpotifySdk.resume();
   }
 }

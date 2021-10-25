@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:spotify_lyric_finder/controllers/home_controller.dart';
 import 'package:spotify_lyric_finder/models/lyric.dart';
+import 'package:spotify_lyric_finder/screens/home/bottom_modal.dart';
 import 'package:spotify_lyric_finder/utils/genius.dart';
 import 'package:spotify_lyric_finder/utils/spotify.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
@@ -14,9 +17,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _currentSong = "Not yet Searched!";
-  String _lyrics = "";
-  String _lyricsUrl = "";
+  // String _currentSong = "Not yet Searched!";
+  // String _lyrics = "";
+  // String _lyricsUrl = "";
 
   @override
   void initState() {
@@ -24,43 +27,15 @@ class _HomePageState extends State<HomePage> {
     connectToSpotify();
   }
 
-  void _getCurrentSong() async {
-    var state = await SpotifySdk.getPlayerState();
-    var song = state!.track!.name;
-    var artist = state.track!.artist.name;
-    setState(() {
-      _currentSong = song + " by " + artist;
-      _lyrics = "Loading...";
-      _lyricsUrl = "";
-    });
-    try {
-      print("query--> $artist $song");
-      Lyrics lyrics = await getLyrics(artist, song);
-      print("from home--> ${lyrics.lyrics}");
-      setState(() {
-        _lyrics = lyrics.lyrics;
-        _lyricsUrl = lyrics.url;
-      });
-    } catch (e) {
-      print("Error happened fetching lyrics --> $e");
-      setState(() {
-        _lyrics = "Something unexpected happened";
-        _lyricsUrl = '';
-      });
-      Fluttertoast.showToast(msg: "Something unexpected happened");
-    }
-    print("Spotify Song is: $song");
-  }
-
   Widget getLine(String line) {
     line = line.trim();
     if (line.isEmpty) {
       return Container(
-        height: 60,
+        height: 40,
       );
     }
     return Container(
-      height: 60,
+      height: 50,
       // color: const Color(0xffeeee00),
       alignment: Alignment.center,
       padding: EdgeInsets.symmetric(horizontal: 8),
@@ -79,6 +54,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    HomeController homeController = Get.find<HomeController>();
     return Scaffold(
       appBar: AppBar(
         title: RichText(
@@ -119,30 +95,36 @@ class _HomePageState extends State<HomePage> {
                           constraints: BoxConstraints(
                             minHeight: MediaQuery.of(context).size.height,
                           ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    bottom: 10, top: 10, left: 5, right: 5),
-                                child: Text(
-                                  "$_currentSong",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 26),
-                                  textAlign: TextAlign.center,
+                          child: Obx(
+                            () => Column(
+                              mainAxisSize: MainAxisSize.min,
+                              // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      bottom: 10, top: 10, left: 5, right: 5),
+                                  child: Text(
+                                    homeController.currentSong.toString(),
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 100),
-                                child: Divider(color: Colors.white, height: 20),
-                              ),
-                              ..._lyrics
-                                  .trim()
-                                  .split('\n')
-                                  .map((line) => getLine(line))
-                                  .toList()
-                            ],
+                                Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 100),
+                                  child:
+                                      Divider(color: Colors.white, height: 20),
+                                ),
+                                ...homeController.lyrics
+                                    .trim()
+                                    .split('\n')
+                                    .map((line) => getLine(line))
+                                    .toList()
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -154,35 +136,33 @@ class _HomePageState extends State<HomePage> {
                 alignment: Alignment.bottomRight,
                 child: InkWell(
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 5, right: 2),
+                    margin: const EdgeInsets.only(bottom: 5, right: 10),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 15, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 10,
+                          color: Color.fromRGBO(200, 200, 200, 0.25),
+                        )
+                      ],
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.search,
+                          Icons.expand_more,
                           color: Colors.white,
-                        ),
-                        SizedBox(width: 5),
-                        Text(
-                          "Search",
-                          style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                       ],
                     ),
                   ),
                   onTap: () async {
-                    try {
-                      _getCurrentSong();
-                      print("pressed");
-                    } catch (e) {
-                      print("Exception --> $e");
-                    }
+                    showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.black12,
+                        builder: (_) => BottomModal());
                   },
                 ),
               ),

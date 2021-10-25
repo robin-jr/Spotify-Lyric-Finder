@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:spotify_lyric_finder/controllers/home_controller.dart';
+import 'package:spotify_lyric_finder/controllers/playback_controller.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -30,6 +33,9 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    Get.put(HomeController());
+    Get.put(PlaybackController());
+
     return MultiProvider(
       providers: [
         Provider<AuthenticationService>(
@@ -41,7 +47,7 @@ class MyApp extends StatelessWidget {
           initialData: null,
         ),
       ],
-      child: MaterialApp(
+      child: GetMaterialApp(
         title: 'Spotify Lyric Finder',
         theme: ThemeData(
           primarySwatch: Colors.deepPurple,
