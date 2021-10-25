@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:spotify_lyric_finder/controllers/home_controller.dart';
-import 'package:spotify_lyric_finder/models/lyric.dart';
 import 'package:spotify_lyric_finder/screens/home/bottom_modal.dart';
-import 'package:spotify_lyric_finder/utils/genius.dart';
 import 'package:spotify_lyric_finder/utils/spotify.dart';
-import 'package:spotify_sdk/spotify_sdk.dart';
 
 import '../../authentication_service.dart';
 
@@ -17,10 +13,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // String _currentSong = "Not yet Searched!";
-  // String _lyrics = "";
-  // String _lyricsUrl = "";
-
   @override
   void initState() {
     super.initState();
@@ -69,6 +61,11 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         actions: [
+          IconButton(
+              onPressed: () {
+                homeController.getCurrentSong();
+              },
+              icon: Icon(Icons.refresh)),
           IconButton(
             icon: Icon(Icons.logout),
             iconSize: 22,
