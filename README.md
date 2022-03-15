@@ -1,16 +1,8 @@
-# spotify_lyric_finder
+# Spotify Lyrics Finder
 
-A new Flutter project.
+In this project, I have created a flutter app to get the lyrics of the song you are currently listening to on Spotify. This works by connecting with your Spotify account. The lyrics are being fetched from Genius API.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Getting Started
+run <br/>
+`flutter pub get` and then <br/>
+`flutter run`
